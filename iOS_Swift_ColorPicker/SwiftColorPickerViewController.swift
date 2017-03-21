@@ -20,15 +20,15 @@ public protocol SwiftColorPickerDelegate
 /// The delegate (SwiftColorPickerDelegate) will be notified about the color selection change.
 /// The user can simply tap a color or pan over the palette. When panning over the palette a round preview
 /// view will appear and show the current selected colot.
-public class SwiftColorPickerViewController: UIViewController
+open class SwiftColorPickerViewController: UIViewController
 {
     /// Delegate of the SwiftColorPickerViewController
-    public var delegate: SwiftColorPickerDelegate?
+    open var delegate: SwiftColorPickerDelegate?
     
     /// Width of the edge around the color palette.
     /// The border change the color with the selection by the user. 
     /// Default is 10
-    public var coloredBorderWidth:Int = 10 {
+    open var coloredBorderWidth:Int = 10 {
         didSet {
             colorPaletteView.coloredBorderWidth = coloredBorderWidth
         }
@@ -36,7 +36,7 @@ public class SwiftColorPickerViewController: UIViewController
     
     /// Diameter of the circular view, which preview the color selection.
     /// The preview will apear at the fimnger tip of the users touch and show se current selected color.
-    public var colorPreviewDiameter:Int = 35 {
+    open var colorPreviewDiameter:Int = 35 {
         didSet {
             setConstraintsForColorPreView()
         }
@@ -44,7 +44,7 @@ public class SwiftColorPickerViewController: UIViewController
     
     /// Number of color blocks in x-direction.
     /// Color palette size is numberColorsInXDirection * numberColorsInYDirection
-    public var numberColorsInXDirection: Int = 10 {
+    open var numberColorsInXDirection: Int = 10 {
         didSet {
             colorPaletteView.numColorsX = numberColorsInXDirection
         }
@@ -52,20 +52,20 @@ public class SwiftColorPickerViewController: UIViewController
     
     /// Number of color blocks in x-direction.
     /// Color palette size is numberColorsInXDirection * numberColorsInYDirection
-    public var numberColorsInYDirection: Int = 18 {
+    open var numberColorsInYDirection: Int = 18 {
         didSet {
             colorPaletteView.numColorsY = numberColorsInYDirection
         }
     }
     
-    private var colorPaletteView: SwiftColorView = SwiftColorView() // is the self.view property
-    private var colorSelectionView: UIView = UIView()
+    fileprivate var colorPaletteView: SwiftColorView = SwiftColorView() // is the self.view property
+    fileprivate var colorSelectionView: UIView = UIView()
     
-    private var selectionViewConstraintX: NSLayoutConstraint = NSLayoutConstraint()
-    private var selectionViewConstraintY: NSLayoutConstraint = NSLayoutConstraint()
+    fileprivate var selectionViewConstraintX: NSLayoutConstraint = NSLayoutConstraint()
+    fileprivate var selectionViewConstraintY: NSLayoutConstraint = NSLayoutConstraint()
     
     
-    public required override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+    public required override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
     
@@ -73,15 +73,15 @@ public class SwiftColorPickerViewController: UIViewController
         super.init(coder: aDecoder)
     }
     
-    public override func loadView()
+    open override func loadView()
     {
         super.loadView()
         if ( !(self.view is SwiftColorView) ) // used if the view controller ist instanciated without interface builder
         {
             let s = colorPaletteView
             s.translatesAutoresizingMaskIntoConstraints = false
-            s.contentMode = UIViewContentMode.Redraw
-            s.userInteractionEnabled = true
+            s.contentMode = UIViewContentMode.redraw
+            s.isUserInteractionEnabled = true
             self.view = s
         }
         else // used if in intervacebuilder the view property is set to the SwiftColorView
@@ -94,7 +94,7 @@ public class SwiftColorPickerViewController: UIViewController
         
     }
     
-    public override func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
         // needed when using auto layout
         colorSelectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -107,47 +107,47 @@ public class SwiftColorPickerViewController: UIViewController
         // setup preview
         colorSelectionView.layer.masksToBounds = true
         colorSelectionView.layer.borderWidth = 0.5
-        colorSelectionView.layer.borderColor = UIColor.grayColor().CGColor
+        colorSelectionView.layer.borderColor = UIColor.gray.cgColor
         colorSelectionView.alpha = 0.0
         
         
         // adding gesture regocnizer
-        let tapGr = UITapGestureRecognizer(target: self, action: "handleGestureRecognizer:")
-        let panGr = UIPanGestureRecognizer(target: self, action: "handleGestureRecognizer:")
+        let tapGr = UITapGestureRecognizer(target: self, action: #selector(SwiftColorPickerViewController.handleGestureRecognizer(_:)))
+        let panGr = UIPanGestureRecognizer(target: self, action: #selector(SwiftColorPickerViewController.handleGestureRecognizer(_:)))
         panGr.maximumNumberOfTouches = 1
         colorPaletteView.addGestureRecognizer(tapGr)
         colorPaletteView.addGestureRecognizer(panGr)
     }
     
     
-    public override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        super.touchesBegan(touches as Set<UITouch>, withEvent: event)
+    open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches as Set<UITouch>, with: event)
         
         if let touch = touches.first
         {
             let t = touch
-            let point = t.locationInView(colorPaletteView)
+            let point = t.location(in: colorPaletteView)
             positionSelectorViewWithPoint(point)
             colorSelectionView.alpha = 1.0
         }
         
     }
     
-    func handleGestureRecognizer(recognizer: UIGestureRecognizer)
+    func handleGestureRecognizer(_ recognizer: UIGestureRecognizer)
     {
-        let point = recognizer.locationInView(self.colorPaletteView)
+        let point = recognizer.location(in: self.colorPaletteView)
         positionSelectorViewWithPoint(point)
-        if (recognizer.state == UIGestureRecognizerState.Began)
+        if (recognizer.state == UIGestureRecognizerState.began)
         {
             colorSelectionView.alpha = 1.0
         }
-        else if (recognizer.state == UIGestureRecognizerState.Ended)
+        else if (recognizer.state == UIGestureRecognizerState.ended)
         {
             startHidingSelectionView()
         }
     }
 
-    private func setConstraintsForColorPreView()
+    fileprivate func setConstraintsForColorPreView()
     {
         colorPaletteView.removeConstraints(colorPaletteView.constraints)
         colorSelectionView.layer.cornerRadius = CGFloat(colorPreviewDiameter/2)
@@ -161,8 +161,8 @@ public class SwiftColorPickerViewController: UIViewController
         
         let metrics = ["diameter" : colorPreviewDiameter, "pad" : pad]
         
-        let constH2 = NSLayoutConstraint.constraintsWithVisualFormat("H:|-pad-[selectionView(diameter)]", options: [], metrics: metrics, views: views)
-        let constV2 = NSLayoutConstraint.constraintsWithVisualFormat("V:|-pad-[selectionView(diameter)]", options: [], metrics: metrics, views: views)
+        let constH2 = NSLayoutConstraint.constraints(withVisualFormat: "H:|-pad-[selectionView(diameter)]", options: [], metrics: metrics, views: views)
+        let constV2 = NSLayoutConstraint.constraints(withVisualFormat: "V:|-pad-[selectionView(diameter)]", options: [], metrics: metrics, views: views)
         colorPaletteView.addConstraints(constH2)
         colorPaletteView.addConstraints(constV2)
         
@@ -184,7 +184,7 @@ public class SwiftColorPickerViewController: UIViewController
         }
     }
     
-    private func positionSelectorViewWithPoint(point: CGPoint)
+    fileprivate func positionSelectorViewWithPoint(_ point: CGPoint)
     {
         let colorSelected = colorPaletteView.colorAtPoint(point)
         delegate?.colorSelectionChanged(selectedColor: colorSelected)
@@ -194,18 +194,18 @@ public class SwiftColorPickerViewController: UIViewController
         selectionViewConstraintY.constant = (point.y-1.2*colorSelectionView.bounds.size.height)
     }
     
-    private func startHidingSelectionView() {
-        UIView.animateWithDuration(0.5, animations: {
+    fileprivate func startHidingSelectionView() {
+        UIView.animate(withDuration: 0.5, animations: {
             self.colorSelectionView.alpha = 0.0
         })
     }
 }
 
-@IBDesignable public class SwiftColorView: UIView
+@IBDesignable open class SwiftColorView: UIView
 {
     /// Number of color blocks in x-direction.
     /// Color palette size is numColorsX * numColorsY
-    @IBInspectable public var numColorsX:Int =  10 {
+    @IBInspectable open var numColorsX:Int =  10 {
         didSet {
             setNeedsDisplay()
         }
@@ -213,7 +213,7 @@ public class SwiftColorPickerViewController: UIViewController
     
     /// Number of color blocks in x-direction.
     /// Color palette size is numColorsX * numColorsY
-    @IBInspectable public var numColorsY:Int = 18 {
+    @IBInspectable open var numColorsY:Int = 18 {
         didSet {
             setNeedsDisplay()
         }
@@ -222,22 +222,22 @@ public class SwiftColorPickerViewController: UIViewController
     /// Width of the edge around the color palette.
     /// The border change the color with the selection by the user.
     /// Default is 10
-    @IBInspectable public var coloredBorderWidth:Int = 10 {
+    @IBInspectable open var coloredBorderWidth:Int = 10 {
         didSet {
             setNeedsDisplay()
         }
     }
     
-    @IBInspectable public var showGridLines:Bool = false {
+    @IBInspectable open var showGridLines:Bool = false {
         didSet {
             setNeedsDisplay()
         }
     }
     
-    public override func drawRect(rect: CGRect)
+    open override func draw(_ rect: CGRect)
     {
-        super.drawRect(rect)
-        let lineColor = UIColor.grayColor()
+        super.draw(rect)
+        let lineColor = UIColor.gray
         let pS = patternSize()
         let w = pS.w
         let h = pS.h
@@ -247,12 +247,12 @@ public class SwiftColorPickerViewController: UIViewController
             for x in 0..<numColorsX
             {
                 let path = UIBezierPath()
-                let start = CGPointMake(CGFloat(x)*w+CGFloat(coloredBorderWidth),CGFloat(y)*h+CGFloat(coloredBorderWidth))
-                path.moveToPoint(start);
-                path.addLineToPoint(CGPointMake(start.x+w, start.y))
-                path.addLineToPoint(CGPointMake(start.x+w, start.y+h))
-                path.addLineToPoint(CGPointMake(start.x, start.y+h))
-                path.addLineToPoint(start)
+                let start = CGPoint(x: CGFloat(x)*w+CGFloat(coloredBorderWidth),y: CGFloat(y)*h+CGFloat(coloredBorderWidth))
+                path.move(to: start);
+                path.addLine(to: CGPoint(x: start.x+w, y: start.y))
+                path.addLine(to: CGPoint(x: start.x+w, y: start.y+h))
+                path.addLine(to: CGPoint(x: start.x, y: start.y+h))
+                path.addLine(to: start)
                 path.lineWidth = 0.25
                 colorForRectAt(x,y:y).setFill();
                 
@@ -270,10 +270,10 @@ public class SwiftColorPickerViewController: UIViewController
         }
     }
     
-    private func colorForRectAt(x: Int, y: Int) -> UIColor
+    fileprivate func colorForRectAt(_ x: Int, y: Int) -> UIColor
     {
         var hue:CGFloat = CGFloat(x) / CGFloat(numColorsX)
-        var fillColor = UIColor.whiteColor()
+        var fillColor = UIColor.white
         if (y==0)
         {
             if (x==(numColorsX-1))
@@ -290,7 +290,7 @@ public class SwiftColorPickerViewController: UIViewController
         return fillColor
     }
     
-    func colorAtPoint(point: CGPoint) -> UIColor
+    func colorAtPoint(_ point: CGPoint) -> UIColor
     {
         let pS = patternSize()
         let w = pS.w
@@ -301,7 +301,7 @@ public class SwiftColorPickerViewController: UIViewController
         return colorForRectAt(Int(x), y:Int(y))
     }
     
-    private func patternSize() -> (w: CGFloat, h:CGFloat)
+    fileprivate func patternSize() -> (w: CGFloat, h:CGFloat)
     {
         let width = self.bounds.width-CGFloat(2*coloredBorderWidth)
         let height = self.bounds.height-CGFloat(2*coloredBorderWidth)
@@ -311,7 +311,7 @@ public class SwiftColorPickerViewController: UIViewController
         return (w,h)
     }
     
-    public override func prepareForInterfaceBuilder()
+    open override func prepareForInterfaceBuilder()
     {
         print("Compiled and run for IB")
     }
